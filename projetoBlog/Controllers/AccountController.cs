@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+﻿using projetoBlog.Models;
+using projetoBlog.Models.Account;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using projetoBlog.Models.Account;
 
 namespace projetoBlog.Controllers
 {
@@ -80,8 +77,14 @@ namespace projetoBlog.Controllers
                 return View(model);
             }
 
-            // XXX TRABALHE AQUI
-            // Inclua o usuário na base de dados.
+            var user = new Usuario
+            {
+                Name = model.Nome,
+                Email = model.Email
+            };
+
+            var connectionMongoDB = new AcessoMongoDB();
+            await connectionMongoDB.Usuarios.InsertOneAsync(user);
 
             return RedirectToAction("Index", "Home");
         }
