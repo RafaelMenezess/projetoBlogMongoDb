@@ -1,5 +1,7 @@
-﻿using projetoBlog.Models;
+﻿using MongoDB.Driver;
+using projetoBlog.Models;
 using projetoBlog.Models.Account;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -28,27 +30,28 @@ namespace projetoBlog.Controllers
                 return View(model);
             }
 
-            // XXXX TRABALHE AQUI
-            // Neste ponto iremos buscar o email digitado ao acessar o Blog
-            // Descomentar as linhas abaixo
+            var connectionMongoDB = new AcessoMongoDB();
+            var construtor = Builders<Usuario>.Filter;
+            var condicao = construtor.Eq(x => x.Email, model.Email);
+            var user = await connectionMongoDB.Usuarios.Find(condicao).SingleOrDefaultAsync();
 
-            //if (user == null)
-            //{
-            //    ModelState.AddModelError("Email", "Correio não foi registrado.");
-            //    return View(model);
-            //}
+            if (user == null)
+            {
+                ModelState.AddModelError("Email", "Correio não foi registrado.");
+                return View(model);
+            }
 
-            //var identity = new ClaimsIdentity(new[]
-            //    {
-            //        new Claim(ClaimTypes.Name, user.Nome),
-            //        new Claim(ClaimTypes.Email, user.Email)
-            //    },
-            //    "ApplicationCookie");
+            var identity = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.Name),
+                    new Claim(ClaimTypes.Email, user.Email)
+                },
+                "ApplicationCookie");
 
-            //var context = Request.GetOwinContext();
-            //var authManager = context.Authentication;
+            var context = Request.GetOwinContext();
+            var authManager = context.Authentication;
 
-            //authManager.SignIn(identity);
+            authManager.SignIn(identity);
 
             return Redirect(GetRedirectUrl(model.RetornoUrl));
         }
